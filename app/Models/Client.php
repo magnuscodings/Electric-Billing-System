@@ -17,7 +17,7 @@ class Client extends Model
         'middleName',
         'suffix',
         'address',
-        'stallNumber',
+        // 'stallNumber',
         'email',
         'user_id'
     ];

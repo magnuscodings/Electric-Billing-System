@@ -38,7 +38,7 @@ class ClientController extends Controller
                 ->orWhere('lastName', 'like', '%' . $query . '%')
                 ->orWhere('middleName', 'like', '%' . $query . '%')
                 ->orWhere('suffix', 'like', '%' . $query . '%')
-                ->orWhere('stallNumber', 'like', '%' . $query . '%')
+                // ->orWhere('stallNumber', 'like', '%' . $query . '%')
                 ->orWhere('email', 'like', '%' . $query . '%');
         })->with('meter')->paginate(10);
 
@@ -82,7 +82,7 @@ class ClientController extends Controller
                 'updateSuffix' => 'nullable|string|max:255',
                 'updateAddress' => 'required|string',
                 'updateMeterCode' => 'required|exists:meters,id',
-                'updateStallNumber' => 'required|string|max:255',
+                // 'updateStallNumber' => 'required|string|max:255',
             ]);
 
             // Update client information
@@ -92,7 +92,7 @@ class ClientController extends Controller
                 'lastName' => $validated['updateLastName'],
                 'suffix' => $validated['updateSuffix'],
                 'address' => $validated['updateAddress'],
-                'stallNumber' => $validated['updateStallNumber'],
+                // 'stallNumber' => $validated['updateStallNumber'],
             ]);
 
             // Handle meter code update
@@ -146,6 +146,7 @@ class ClientController extends Controller
             // Create the client with user_id
             $clientData = $request->validated();
             $clientData['user_id'] = $user->id;
+            $clientData['address'] = $request->barangay.', '.$request->address; 
             $client = Client::create($clientData);
 
             //Update meter code if client was made

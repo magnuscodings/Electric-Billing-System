@@ -150,6 +150,15 @@
             <x-input-field id="email" name="email" type="email" :value="old('email')" :error-message="$errors->first('email')"
                 label="Email" placeholder="Type email" />
 
+                <div>
+                
+                <label for="barangay" class="block mt-4 mb-2 text-sm font-medium text-gray-900 dark:text-white">Select a Stall Number</label>
+                <select id="barangay" name="barangay"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        @includeIf('barangay')
+                </select>
+            </div>
+
             <x-textarea-field id="address" name="address" label="Address" :value="old('address')" :error-message="$errors->first('address')"
                 placeholder="Enter address" :rows="6" :max-length="500" :show-character-count="true" />
 
@@ -165,12 +174,8 @@
                     @endforeach
                 </select>
             </div>
-
-            <x-input-field id="stallNumber" name="stallNumber" type="text" :value="old('stallNumber')" :error-message="$errors->first('stallNumber')"
-                label="Stall Number" placeholder="Type Stall Number" />
-
             <div
-                class="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white p-4 dark:border-gray-600 dark:bg-gray-800">
+                class=" left-0 right-0 border-t border-gray-200 bg-white p-4 dark:border-gray-600 dark:bg-gray-800">
                 <div class="flex w-full space-x-3">
                     <button type="submit" id="submitAddClient"
                         class="text-white w-full justify-center bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
@@ -241,24 +246,22 @@
                 required />
 
             <div>
-                <label for="updateMeterCode" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select a
-                    Meter
-                    Code</label>
+                <label for="updateMeterCode" class="block mt-4 mb-2 text-sm font-medium text-gray-900 dark:text-white">Select a
+                    Stall Number</label>
                 <select id="updateMeterCode" name="updateMeterCode"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                     @foreach ($meters as $meter)
                         @if (is_null($meter->clientId))
-                            <option value="{{ $meter->id }}">{{ $meter->meterCode }}</option>
+                            <option value="{{ $meter->id }}">{{ $meter->stallNumber }}</option>
                         @endif
                     @endforeach
                 </select>
             </div>
 
-            <x-input-field id="updateStallNumber" name="updateStallNumber" type="text" :value="old('updateStallNumber')"
-                :error-message="$errors->first('updateStallNumber')" label="Stall Number" placeholder="Enter Stall Number" required />
+          
 
             <div
-                class="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white p-4 dark:border-gray-600 dark:bg-gray-800">
+                class="left-0 right-0 border-t border-gray-200 bg-white p-4 dark:border-gray-600 dark:bg-gray-800">
                 <div class="flex w-full space-x-3">
                     <button type="submit" id="submitUpdateClient"
                         class="text-white w-full justify-center bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
@@ -428,9 +431,7 @@
                             document.getElementById('updateLastName').value = client.lastName || '';
                             document.getElementById('updateSuffix').value = client.suffix || '';
                             document.getElementById('updateAddress').value = client.address || '';
-                            document.getElementById('updateStallNumber').value = client
-                                .stallNumber || '';
-
+                       
                             // Set the meter code if available
                             const meterSelect = document.getElementById('updateMeterCode');
                             if (client.meter && client.meter.id) {
@@ -443,7 +444,7 @@
                                     }
                                 }
                                 if (!exists) {
-                                    const option = new Option(client.meter.meterCode, client.meter
+                                    const option = new Option(client.meter.stallNumber, client.meter
                                         .id);
                                     meterSelect.add(option);
                                 }

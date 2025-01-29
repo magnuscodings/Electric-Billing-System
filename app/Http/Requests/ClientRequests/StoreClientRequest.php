@@ -33,12 +33,12 @@ class StoreClientRequest extends FormRequest
                 'min:5',
                 'max:500'
             ],
-            'stallNumber' => [
-                'required',
-                'string',
-                'regex:/^[a-zA-Z0-9-]+$/',
-                Rule::unique('clients', 'stallNumber')->whereNull('deleted_at'),
-            ],
+            // 'stallNumber' => [
+            //     'required',
+            //     'string',
+            //     'regex:/^[a-zA-Z0-9-]+$/',
+            //     Rule::unique('clients', 'stallNumber')->whereNull('deleted_at'),
+            // ],
             'meterCode' => ['required', 'exists:meters,id'],
         ];
     }

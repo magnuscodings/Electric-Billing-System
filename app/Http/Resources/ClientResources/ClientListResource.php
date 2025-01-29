@@ -14,7 +14,7 @@ class ClientListResource extends JsonResource
             'fullName' => $this->fullName,
             'address' => $this->address,
             'code' => $this->meter,
-            'stallNumber' => $this->stallNumber
+            // 'stallNumber' => $this->stallNumber
         ];
     }
 }
