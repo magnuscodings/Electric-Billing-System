@@ -6,6 +6,7 @@ use App\Http\Requests\MeterRequests\StoreMeterRequest;
 use App\Http\Resources\ApiResource\MeterResources\MeterListResource as MeterResourcesMeterListResource;
 use App\Http\Resources\MeterResources\MeterListResource;
 use App\Models\Meter;
+use App\Models\Billing;
 use App\Models\MeterReading;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -18,6 +19,30 @@ class MeterController extends Controller
         $meters = MeterListResource::collection(Meter::with('latestReading')->paginate(10));
         return view('meters', compact('meters'));
     }
+
+    // public function Meters()
+    // {
+    //     $meters = Meter::select('meters.*', 'users.*', 'c.count')
+    //         ->join('users', 'meters.clientId', '=', 'users.id')
+    //         ->leftJoinSub(
+    //             Billing::selectRaw('COUNT(*) as count, clientId')
+    //                 ->whereNull('paymentDate')
+    //                 ->groupBy('clientId'),
+    //             'c',
+    //             'users.id',
+    //             '=',
+    //             'c.clientId'
+    //         )
+    //         ->where(function ($query) {
+    //             $query->where('c.count', '<', 2)
+    //                   ->orWhereNull('c.count');
+    //         })
+    //         ->paginate(10); // Paginate results
+    
+    //     return view('meters', compact('meters'));
+    // }
+    
+
 
     // Update your search method to handle AJAX requests
     public function search(Request $request)

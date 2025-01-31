@@ -16,7 +16,8 @@ class MeterListResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'meterCode' => $this->meterCode
-        ];
+            'meterCode' => $this->meterCode,
+            'stallNumber' => $this->stallNumber
+         ];
     }
 }
