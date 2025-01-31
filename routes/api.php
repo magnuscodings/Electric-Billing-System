@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\BillingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +28,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('/incomingBillingRequestCount', [BillingController::class, 'getIncomingBillingRequestsCount']);
 
 Route::post('/login', [AuthController::class, 'apiLogin']);
+
+Route::post('/forgot', [ForgotPasswordController::class, 'sendResetLinkEmailTest'])->name('password.email');
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/update-fcm-token', [AuthController::class, 'updateFcmToken']);
     Route::post('/logout', [AuthController::class, 'apiLogout']);
