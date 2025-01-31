@@ -27,6 +27,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('/incomingBillingRequestCount', [BillingController::class, 'getIncomingBillingRequestsCount']);
 
+Route::get('/billingNotification/{clientID}', [BillingController::class, 'getRowsBillingStatus']);
+
+
 Route::post('/login', [AuthController::class, 'apiLogin']);
 
 Route::post('/forgot', [ForgotPasswordController::class, 'sendResetLinkEmailTest'])->name('password.email');
@@ -41,6 +44,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('meter', MeterController::class);
     Route::get('meter/{meterId}/last-reading', [MeterReadingController::class, 'getLastReading']);
     Route::apiResource('meterReading', MeterReadingController::class);
+   
+   
 
     Route::get('client/me', [ClientController::class, 'showMyClient']);
     Route::get('/check-stall-number/{stallNumber}', [ClientController::class, 'checkStallNumber']);

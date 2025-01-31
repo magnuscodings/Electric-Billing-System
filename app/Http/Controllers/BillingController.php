@@ -50,6 +50,20 @@ class BillingController extends Controller
         ]);
     }
 
+
+    public function getRowsBillingStatus($clientID)
+    {
+        // Ensure $clientID is valid before querying
+        if (empty($clientID)) {
+            return response()->json(['message' => 'Invalid client ID', 'data' => []], 400);
+        }
+    
+        // Fetch all billing records for the given client ID(s)
+        $meters = Billing::whereIn('clientId', (array) $clientID)->get();
+    
+        return response()->json(['count' => $meters->count(), 'data' => $meters]);
+    }
+    
     public function PendingBillings()
     {
         $unpaidBillings = Billing::with([
