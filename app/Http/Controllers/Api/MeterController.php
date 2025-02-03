@@ -15,23 +15,45 @@ class MeterController extends Controller
     //     return response()->json($meters);
     // }
 
-    public function index()
-    {
-        $meters = Meter::select('meters.*', 'c.count')
-            ->leftJoinSub(
-                Billing::selectRaw('COUNT(*) as count, clientId')
-                    ->whereNull('paymentDate')
-                    ->groupBy('clientId'),
-                'c',
-                'meters.clientId',
-                '=',
-                'c.clientId'
-            )
-            ->whereNull('c.count') // Filter where count IS NULL
-            ->paginate(10); // Paginate results
+    // public function index()
+    // {
+    //     $meters = Meter::select('meters.*', 'c.count')
+    //         ->leftJoinSub(
+    //             Billing::selectRaw('COUNT(*) as count, clientId')
+    //                 ->whereNull('paymentDate')
+    //                 ->groupBy('clientId'),
+    //             'c',
+    //             'meters.clientId',
+    //             '=',
+    //             'c.clientId'
+    //         )
+    //         ->whereNull('c.count') // Filter where count IS NULL
+    //         ->paginate(10); // Paginate results
     
-        return response()->json(MeterListResource::collection($meters));
-    }
+    //     return response()->json(MeterListResource::collection($meters));
+    // }
+
+    public function index()
+{
+    $meters = Meter::select('meters.*', 'c.count')
+        ->leftJoinSub(
+            Billing::selectRaw('COUNT(*) as count, clientId')
+                ->whereNull('paymentDate')
+                ->groupBy('clientId'),
+            'c',
+            'meters.clientId',
+            '=',
+            'c.clientId'
+        )
+        ->where(function ($query) {
+            $query->whereNull('c.count')
+                  ->orWhere('c.count', '<', 2);
+        })
+        ->paginate(10); // Paginate results
+
+    return response()->json(MeterListResource::collection($meters));
+}
+
     
 
 }
