@@ -5,7 +5,7 @@
 
     <div class="pt-6 px-4">
         <!-- Row 1: Stats Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div class="grid grid-cols-4 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <!-- Clients Card -->
             <div class="bg-white shadow rounded-lg p-4 sm:p-6 xl:p-8">
                 <div class="flex items-center">

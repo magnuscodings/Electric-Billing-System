@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('middleName')->nullable();
             $table->string('suffix')->nullable();
             $table->text('address');
-            $table->string('stallNumber');
+            $table->string('stallNumber')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
