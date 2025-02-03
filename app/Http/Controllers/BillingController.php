@@ -120,6 +120,85 @@ class BillingController extends Controller
         }
     }
 
+//     public function generateBilling(StoreNewBillingRequest $request)
+// {
+//     // Fetch meters with readings
+//     $meters = Meter::with('latestReading')->get();
+    
+//     foreach ($meters as $meter) {
+//         // Ensure the meter has a valid reading
+//         if (!$meter->latestReading) {
+//             continue;
+//         }
+
+//         // Check if billing already exists for this meter reading
+//         if (Billing::where('meter_reading_id', $meter->latestReading->id)->exists()) {
+//             continue;
+//         }
+
+//         // Calculate consumption and total amount
+//         $consumption = $meter->latestReading->consumption ?? 0;
+//         $rate = Billing::latest('created_at')->first()?->rate ?? 15.00;
+//         // $rate = Setting::where('key', 'rate_per_kwh')->value('value') ?? 0; // Fetch rate from settings
+//         $totalAmount = $consumption * $rate;
+
+//         // Save billing record
+//         Billing::create([
+//             'meter_reading_id' => $meter->latestReading->id,
+//             'meter_code' => $meter->meterCode,
+//             'current_reading' => $meter->latestReading->reading,
+//             'previous_reading' => $meter->previousReading?->reading ?? 0,
+//             'consumption' => $consumption,
+//             'rate' => $rate,
+//             'total_amount' => $totalAmount,
+//             'billing_date' => now()->setDay(15)->format('Y-m-d'),
+//         ]);
+//     }
+
+//     return response()->json(['message' => 'Billing generated successfully!'], 200);
+// }
+
+
+public function generate()
+{
+    // echo 123;
+    // // Your logic for generating billing
+    // return response()->json(['message' => 'Billing generated successfully']);
+
+    $meters = Meter::with('latestReading')->get();
+    
+    foreach ($meters as $meter) {
+        // Ensure the meter has a valid reading
+        if (!$meter->latestReading) {
+            continue;
+        }
+
+        // Check if billing already exists for this meter reading
+        if (Billing::where('meterReadingId', $meter->latestReading->id)->exists()) {
+            continue;
+        }
+
+        // Calculate consumption and total amount
+        $consumption = $meter->latestReading->consumption ?? 0;
+        $rate = Billing::latest('created_at')->first()?->rate ?? 15.00;
+        // $rate = Setting::where('key', 'rate_per_kwh')->value('value') ?? 0; // Fetch rate from settings
+        $totalAmount = $consumption * $rate;
+
+        // Save billing record
+        Billing::create([
+            'meterReadingId' => $meter->latestReading->id,
+            'clientId' => $meter->clientId,
+            'rate' => $rate,
+            'totalAmount' => $totalAmount,
+            'billingDate' => now()->setDay(15)->format('Y-m-d'),
+        ]);
+    }
+
+    return response()->json(['message' => 'Billing generated successfully!'], 200);
+}
+
+
+
     public function markAsPaid($id)
     {
         try {

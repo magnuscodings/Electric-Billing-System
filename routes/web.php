@@ -58,6 +58,9 @@ Route::middleware('auth')->group(function () {
         Route::prefix('billings')->group(function () {
             Route::get('/', [BillingController::class, 'Billings'])->name('view.billings');
             Route::post('/', [BillingController::class, 'Store'])->name('view.billing.store');
+
+            Route::post('/billing/generate', [BillingController::class, 'generate'])->name('view.billing.generateBilling');
+
         });
 
         Route::prefix('pendings')->group(function () {

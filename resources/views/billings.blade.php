@@ -1,7 +1,12 @@
 @extends('layout.layout')
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
 @section('content')
     <x-page-header homeUrl="#" title="Incoming Billing Requests" />
+    <div class="items-center justify-end p-3 block sm:flex ">
+    <x-button.primary text="Generate Billing" id="generateBilling"   />
+
+    </div>
 
     @if (session('success'))
         <x-alert.success info="{{ session('meterCode') }}" message="{{ session('success') }}" />
@@ -25,6 +30,7 @@
             </ul>
         </div>
     @endif
+
 
     <x-table.table :headers="['Meter Code', 'Current Reading', 'Previous Reading', 'Consumption', 'Reading Date', 'Actions']">
         @foreach ($meters as $meter)
@@ -164,4 +170,33 @@
             });
         });
     </script>
+
+<script>
+    document.getElementById('generateBilling').addEventListener('click', function () {
+        if (!confirm("Are you sure you want to generate billing?")) {
+            return;
+        }
+
+        fetch("{{ route('view.billing.generateBilling') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            location.reload(); // Reload the page to reflect changes
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while generating billing.");
+        });
+    });
+</script>
+
+
+
 @endsection
