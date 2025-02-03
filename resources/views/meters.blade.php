@@ -115,7 +115,7 @@
             </div>
 
             <div class="mb-4">
-                <x-input-field id="stallNumber" name="stallNumber" label="Stall Number" type="number" :value="old('stallNumber')"
+                <x-input-field id="stallNumber" name="stallNumber" label="Stall Number" type="text" :value="old('stallNumber')"
                     :error-message="$errors->first('stallNumber')" placeholder="Type stallNumber" required />
                 <div id="stallNumber-error" class="text-red-500 text-sm mt-1"></div>
             </div>
