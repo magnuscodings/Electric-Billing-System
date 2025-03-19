@@ -17,6 +17,7 @@ use Kreait\Firebase\Factory;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomEmail;
+use Illuminate\Http\Request;
 
 class BillingController extends Controller
 {
@@ -190,7 +191,7 @@ class BillingController extends Controller
             ]);
             $this->saveToFirebase($meterReading->meter->client->id,$data['totalAmount'],"Pending");
             // Send Firebase Notification
-            $this->sendPaymentConfirmationNotification($meterReading->meter->client, $billing);
+            $this->sendPaymentConfirmationNotification($meterReading->meter->client, $billing,"");
 
             DB::commit();
           
@@ -250,8 +251,46 @@ public function generate()
 
 
 
-    public function markAsPaid($id)
+    // public function markAsPaid($id)
+    // {
+    //     try {
+    //         DB::beginTransaction();
+
+    //         $billing = Billing::findOrFail($id);
+
+    //         // Only allow marking unpaid bills as paid
+    //         if ($billing->status !== Billing::STATUS_UNPAID) {
+    //             throw new \Exception('Only unpaid bills can be marked as paid.');
+    //         }
+
+    //         $billing->update([
+    //             'status' => Billing::STATUS_PAID,
+    //             'paymentDate' => now()
+    //         ]);
+
+    //         // Send notification to client about successful payment
+    //         try {
+    //             $this->saveToFirebase($billing->clientId,"a","Paid");
+    //             $this->sendPaymentConfirmationNotification($billing->client, $billing);
+    //         } catch (\Exception $e) {
+    //             // Log notification error but don't rollback transaction
+    //             Log::error('Payment notification failed: ' . $e->getMessage());
+    //         }
+
+    //         DB::commit();
+
+    //         return redirect()->back()->with('success', 'Bill marked as paid successfully');
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return redirect()->back()->withErrors(['error' => 'Error marking bill as paid: ' . $e->getMessage()]);
+    //     }
+    // }
+
+        public function markAsPaid(Request $request, $id)
     {
+        $request->validate([
+            'or_number' => 'required|string|max:255', // Ensure OR number is required
+        ]);
         try {
             DB::beginTransaction();
 
@@ -264,28 +303,29 @@ public function generate()
 
             $billing->update([
                 'status' => Billing::STATUS_PAID,
-                'paymentDate' => now()
+                'paymentDate' => now(),
+                'or_number' => $request->or_number, // Save OR number
             ]);
-
             // Send notification to client about successful payment
             try {
-                $this->saveToFirebase($billing->clientId,"a","Paid");
-                $this->sendPaymentConfirmationNotification($billing->client, $billing);
+                $this->saveToFirebase($billing->clientId,  $billing->totalAmount, "Paid",$request->or_number);
+                $this->sendPaymentConfirmationNotification($billing->client, $billing,$request->or_number);
             } catch (\Exception $e) {
                 // Log notification error but don't rollback transaction
                 Log::error('Payment notification failed: ' . $e->getMessage());
             }
-
             DB::commit();
 
-            return redirect()->back()->with('success', 'Bill marked as paid successfully');
+
+            return redirect()->back()->with('success', 'Bill marked as paid successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Error marking bill as paid: ' . $e->getMessage()]);
         }
     }
 
-    protected function saveToFirebase($clientID, $amount, $status)
+
+    protected function saveToFirebase($clientID, $amount, $status ,$ornumber = '')
     {
         // Initialize Firebase
         $firebase = (new Factory())
@@ -299,6 +339,7 @@ public function generate()
             'clientId' => $clientID,
             'totalAmount' => $amount,
             'status' => $status,
+            'ornumber' => $ornumber,
         ];
     
         // Generate a unique ID for each billing entry and push to the "billings" node
@@ -307,12 +348,18 @@ public function generate()
     
     
     
-    protected function sendPaymentConfirmationNotification($client, $billing)
+    protected function sendPaymentConfirmationNotification($client, $billing,$orNumber)
     {
         // Skip if no FCM token
         if (!$client->fcm_token) {
             return;
         }
+        $body = "Your payment of ₱{$billing->totalAmount} has been recorded.";
+        if($orNumber!='')
+        {
+            $body = "Your payment of ₱{$billing->totalAmount} has been recorded. OR #".$orNumber;
+        }
+
 
         $firebase = (new Factory())
             ->withServiceAccount(storage_path('app/firebase_credentials.json'));
@@ -322,7 +369,7 @@ public function generate()
         $message = CloudMessage::withTarget('token', $client->fcm_token)
             ->withNotification(Notification::create(
                 'Payment Confirmed',
-                "Your payment of ₱{$billing->totalAmount} has been recorded.",
+                $body,
                 'notification_icon'
             ))
             ->withData([

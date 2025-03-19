@@ -45,6 +45,7 @@
         'Rate',
         'Total Amount',
         'Billing Date',
+        'Or Number',
         'Status',
     ]">
         @foreach ($client->billings as $bill)
@@ -66,6 +67,7 @@
                 <x-table-cell :value="$bill->rate" unavailable-text="Unavailable" />
                 <x-table-cell :value="$bill->totalAmount" unavailable-text="Unavailable" />
                 <x-table-cell :value="$bill->billingDate->format('m-d-Y')" unavailable-text="Unavailable" />
+                <x-table-cell :value="$bill->or_number" unavailable-text="Unavailable" />
                 <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
                     @if ($bill->status === 0)
                         <span

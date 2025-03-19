@@ -18,7 +18,8 @@ class Billing extends Model
         'billingDate',       // default at 15 of the month also known as dueDate
         'status',            // 0 = Unpaid, 1 = paid
         'paymentDate',       // New: When the payment was made
-        'clientId'
+        'clientId',
+        'or_number',
         //'generatedBy',       // New: User ID who generated the bill
     ];
 
