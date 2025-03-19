@@ -43,7 +43,12 @@ class Client extends Model
             $this->suffix
         ])->filter()->join(' ');
     }
-
+    public function getID()
+    {
+        return collect([
+            $this->user_id,
+        ]);
+    }
     public function meter()
     {
         return $this->hasOne(Meter::class, 'clientId');

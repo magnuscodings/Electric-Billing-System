@@ -46,7 +46,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/view/client/{id}/update', [ClientController::class, 'update'])->name('view.client.update');
 
         Route::post('/meter/validate-code', [MeterController::class, 'validateMeterCode']);
-
+       
+        Route::get('/getBillingDueDate', [BillingController::class, 'getBillingDueDate']);
+        
         Route::prefix('meters')->group(function () {
             Route::get('/', [MeterController::class, 'Meters'])->name('view.meters');
             Route::post('/', [MeterController::class, 'Store'])->name('view.meter.store');

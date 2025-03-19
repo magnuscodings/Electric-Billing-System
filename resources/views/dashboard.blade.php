@@ -311,6 +311,31 @@
                     paymentStatusChart.render();
                 } catch (error) {}
             });
+
+
+            $(document).ready(function() {
+                $.ajax({
+                    url: "/getBillingDueDate", // Laravel route (update if needed)
+                    type: "GET",
+                    dataType: "json",
+                    success: function(response) {
+                        console.log("Billing Due Data:", response);
+                        // // Handle Notices
+                        // if (response.forNotice.length > 0) {
+                        //     alert("Notice emails sent to:\n" + response.forNotice.join("\n"));
+                        // }
+
+                        // // Handle Disconnections
+                        // if (response.forDisconnection.length > 0) {
+                        //     alert("Disconnection emails sent to:\n" + response.forDisconnection.join("\n"));
+                        // }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", error);
+                        alert("Failed to fetch billing data. Please try again.");
+                    }
+                });
+            });
         </script>
     @endpush
 @endsection

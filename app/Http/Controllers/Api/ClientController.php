@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Client;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 //Resources
 use App\Http\Resources\ClientResources\ClientListResource;
@@ -35,9 +36,17 @@ class ClientController extends Controller
                 ->where('user_id', auth()->id())
                 ->firstOrFail();
 
-            $meterBalance = $client->billings()
+            // $meterBalance = $client->billings()
+            //     ->where('status', 0)
+            //     ->sum('totalAmount');
+            // $meterBalance = $client->billings()->sum('totalAmount');
+            // dd($client->billings()->get());
+            
+
+            $meterBalance = DB::table('billings')
+                ->where('clientId', $client->id) // Ensure it filters by the correct user
                 ->where('status', 0)
-                ->sum('totalAmount');
+                ->sum(DB::raw('COALESCE(totalAmount, 0)'));
 
             $consumptionData = $client->meter->readings
                 ->map(function ($reading) {
@@ -53,6 +62,7 @@ class ClientController extends Controller
                 'success' => true,
                 'data' => [
                     'client' => [
+                        'id' => $client->id,
                         'name' => $client->fullName,
                         'stallNumber' => $client->stallNumber,
                         'address' => $client->address,

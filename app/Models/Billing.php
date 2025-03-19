@@ -18,6 +18,7 @@ class Billing extends Model
         'billingDate',       // default at 15 of the month also known as dueDate
         'status',            // 0 = Unpaid, 1 = paid
         'paymentDate',       // New: When the payment was made
+        'clientId'
         //'generatedBy',       // New: User ID who generated the bill
     ];
 
@@ -60,6 +61,17 @@ class Billing extends Model
     {
         return $this->belongsTo(Client::class, 'clientId');
     }
+    // public function meter()
+    // {
+    //     return $this->belongsTo(Meter::class, 'meterReadingId'); // Correct relationship
+    // }
+
+    // // Get clientId from related Meter record
+    // public function getClientIdAttribute()
+    // {
+    //     return optional($this->meter)->clientId;
+    // }
+
 
     public function generator()
     {

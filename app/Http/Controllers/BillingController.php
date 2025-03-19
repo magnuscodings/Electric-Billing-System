@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
 use Kreait\Firebase\Factory;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CustomEmail;
 
 class BillingController extends Controller
 {
@@ -80,6 +83,90 @@ class BillingController extends Controller
         ]);
     }
 
+
+    public function getBillingDueDate()
+    {
+        // $this->emailSend('dummy1stapador@gmail.com','Disconnection Notice','Your Bill has kwakwak');
+
+        $days=6; //5Days from now for notice -1
+
+        $today = Carbon::now()->toDateString(); 
+        $threeDaysAhead = Carbon::now()->addDays($days)->toDateString(); 
+    
+        $unpaidBillings = Billing::with([
+            'meterReading.meter.client',
+            'meterReading.meter.previousReading'
+        ])
+            ->whereHas('meterReading.meter.client')
+            ->unpaid()
+            ->where('status', 0)
+            ->get();
+    
+        $forDisconnection = [];
+        $forNotice = [];
+    
+        foreach ($unpaidBillings as $billing) {
+            $clientEmail = $billing->client->email;
+            if ($billing->billingDate < $today) {
+
+                if($billing->isnotifiedDisconnection==null || $billing->isnotifiedDisconnection=='')
+                {
+                // $forDisconnection[] = $billing;
+                $forDisconnection[] = $clientEmail;
+                $this->emailSend($clientEmail, 'Disconnection Notice', 'Your bill is overdue. Immediate payment is required.');
+
+                $billing->isnotifiedDisconnection = 1;
+                $billing->save(); // Save changes to the database
+                }
+            } elseif ($billing->billingDate >= $today && $billing->billingDate <= $threeDaysAhead) {
+                if($billing->isnotifiedNotice==null || $billing->isnotifiedNotice=='')
+                {
+                    $forNotice[] = $clientEmail;
+                    $this->emailSend($clientEmail, 'Payment Reminder', 'Your bill is due soon. Please pay before the due date.');
+                    $billing->isnotifiedNotice = 1;
+                    $billing->save(); // Save changes to the database
+                }
+              
+            }
+        }
+      
+        return [
+            'forDisconnection' => $forDisconnection,
+            'forNotice' => $forNotice
+        ];
+    }
+    
+
+    
+    public function emailSend($email, $subject, $messageContent)
+    {
+        try {
+            // Send the email
+            Mail::to($email)->send(new CustomEmail($subject, $messageContent));
+    
+            // Check for failures
+            if (count(Mail::failures()) > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Email failed to send to ' . $email
+                ], 500);
+            }
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Email sent successfully to ' . $email
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send email. ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+
+
+
     public function store(StoreNewBillingRequest $request)
     {
         try {
@@ -101,11 +188,12 @@ class BillingController extends Controller
                 'status' => Billing::STATUS_UNPAID,
                 'notes' => $data['notes'] ?? null,
             ]);
-
+            $this->saveToFirebase($meterReading->meter->client->id,$data['totalAmount'],"Pending");
             // Send Firebase Notification
             $this->sendPaymentConfirmationNotification($meterReading->meter->client, $billing);
 
             DB::commit();
+          
 
             return redirect()->back()->with([
                 'success' => 'Billing created successfully',
@@ -152,6 +240,9 @@ public function generate()
             'totalAmount' => $totalAmount,
             'billingDate' => now()->setDay(15)->format('Y-m-d'),
         ]);
+
+        $this->saveToFirebase($meter->clientId,$totalAmount,"Pending");
+
     }
 
     return response()->json(['message' => 'Billing generated successfully!'], 200);
@@ -178,6 +269,7 @@ public function generate()
 
             // Send notification to client about successful payment
             try {
+                $this->saveToFirebase($billing->clientId,"a","Paid");
                 $this->sendPaymentConfirmationNotification($billing->client, $billing);
             } catch (\Exception $e) {
                 // Log notification error but don't rollback transaction
@@ -193,6 +285,28 @@ public function generate()
         }
     }
 
+    protected function saveToFirebase($clientID, $amount, $status)
+    {
+        // Initialize Firebase
+        $firebase = (new Factory())
+            ->withServiceAccount(storage_path('app/firebase_credentials.json'))
+            ->withDatabaseUri(env('FIREBASE_DATABASE_URL')); // Ensure your .env has FIREBASE_DATABASE_URL
+    
+        $database = $firebase->createDatabase();
+    
+        // Define billing data
+        $data = [
+            'clientId' => $clientID,
+            'totalAmount' => $amount,
+            'status' => $status,
+        ];
+    
+        // Generate a unique ID for each billing entry and push to the "billings" node
+        $database->getReference('billings')->push($data);
+    }
+    
+    
+    
     protected function sendPaymentConfirmationNotification($client, $billing)
     {
         // Skip if no FCM token
@@ -236,4 +350,8 @@ public function generate()
 
         return $pdf->download($filename);
     }
+
+
+
+  
 }
