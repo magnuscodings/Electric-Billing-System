@@ -85,142 +85,57 @@ class BillingController extends Controller
     }
 
 
-    // public function getBillingDueDate()
-    // {
-    //     // $this->emailSend('dummy1stapador@gmail.com','Disconnection Notice','Your Bill has kwakwak');
-
-    //     $days=6; //5Days from now for notice -1
-
-    //     $today = Carbon::now()->toDateString(); 
-    //     $threeDaysAhead = Carbon::now()->addDays($days)->toDateString(); 
-    
-    //     $unpaidBillings = Billing::with([
-    //         'meterReading.meter.client',
-    //         'meterReading.meter.previousReading'
-    //     ])
-    //         ->whereHas('meterReading.meter.client')
-    //         ->unpaid()
-    //         ->where('status', 0)
-    //         ->get();
-    
-    //         $forDisconnectionQuery = Billing::with([
-    //             'meterReading.meter.client',
-    //             'meterReading.meter.previousReading'
-    //         ])
-    //         ->whereHas('meterReading.meter.client')
-    //         ->unpaid()
-    //         ->where('status', 0)
-    //         ->get()
-    //         ->groupBy('meterReading.meter.client.id') // Group by client ID
-    //         ->filter(fn($bills) => $bills->count() > 1) // Filter clients with more than 1 unpaid billing
-    //         ->map(fn($bills) => $bills->sortByDesc('billingDate')->first()); // Get the latest billing per client
-
-
-    //     $forDisconnection = [];
-    //     $forNotice = [];
-    
-    //     foreach ($unpaidBillings as $billing) {
-    //         $clientEmail = $billing->client->email;
-
-    //        if ($billing->billingDate >= $today && $billing->billingDate <= $threeDaysAhead) {
-    //             if($billing->isnotifiedNotice==null || $billing->isnotifiedNotice=='')
-    //             {
-    //                 $forNotice[] = $clientEmail;
-    //                 $this->emailSend($clientEmail, 'Payment Reminder', 'Your bill is due soon. Please pay before the due date.');
-    //                 $billing->isnotifiedNotice = 1;
-    //                 $billing->save(); // Save changes to the database
-    //             }
-              
-    //         }
-    //     }
-
-    //     foreach ($forDisconnectionQuery as $billing) {
-    //         $clientEmail = $billing->client->email;
-
-    //     $billing_10daysbefore = Carbon::parse($billing->billingDate)->subDays(10);
-
-    //       if ($billing_10daysbefore >= $today) {
-    //             if($billing->isnotifiedDisconnection==null || $billing->isnotifiedDisconnection=='')
-    //             {
-    //                 $forDisconnection[] = $clientEmail;
-    //                 $this->emailSend($clientEmail, 'Disconnection Notice', 'Your bill is overdue. Immediate payment is required.');
-    //                 $billing->isnotifiedDisconnection = 1;
-    //                 $billing->save(); // Save changes to the database
-    //             }
-              
-    //         }
-    //     }
-      
-    //     return [
-    //         'forDisconnection' => $forDisconnection,
-    //         'forNotice' => $forNotice
-    //     ];
-    // }
-
     public function getBillingDueDate()
-{
-    $days = 6; // 5 days from now for notice -1
-    $today = Carbon::now()->toDateString(); 
-    $threeDaysAhead = Carbon::now()->addDays($days)->toDateString(); 
+    {
+        // $this->emailSend('dummy1stapador@gmail.com','Disconnection Notice','Your Bill has kwakwak');
 
-    $unpaidBillings = Billing::with([
-        'meterReading.meter.client',
-        'meterReading.meter.previousReading'
-    ])
-    ->whereHas('meterReading.meter.client')
-    ->unpaid()
-    ->where('status', 0)
-    ->get();
+        $days=6; //5Days from now for notice -1
 
-    $forDisconnectionQuery = Billing::with([
-        'meterReading.meter.client',
-        'meterReading.meter.previousReading'
-    ])
-    ->whereHas('meterReading.meter.client')
-    ->unpaid()
-    ->where('status', 0)
-    ->get()
-    ->groupBy('meterReading.meter.client.id')
-    ->filter(fn($bills) => $bills->count() > 1) // Ensure more than one unpaid billing
-    ->map(fn($bills) => $bills->sortByDesc('billingDate')->first());
-        
+        $today = Carbon::now()->toDateString(); 
+        $threeDaysAhead = Carbon::now()->addDays($days)->toDateString(); 
+    
+        $unpaidBillings = Billing::with([
+            'meterReading.meter.client',
+            'meterReading.meter.previousReading'
+        ])
+            ->whereHas('meterReading.meter.client')
+            ->unpaid()
+            ->where('status', 0)
+            ->get();
+    
+        $forDisconnection = [];
+        $forNotice = [];
+    
+        foreach ($unpaidBillings as $billing) {
+            $clientEmail = $billing->client->email;
+            if ($billing->billingDate < $today) {
 
-    $forDisconnection = [];
-    $forNotice = [];
-
-    foreach ($unpaidBillings as $billing) {
-        $clientEmail = $billing->meterReading->meter->client->email ?? null;
-        
-        if ($clientEmail && $billing->billingDate >= $today && $billing->billingDate <= $threeDaysAhead) {
-            if (empty($billing->isnotifiedNotice)) {
-                $forNotice[] = $clientEmail;
-                $this->emailSend($clientEmail, 'Payment Reminder', 'Your bill is due soon. Please pay before the due date.');
-                $billing->isnotifiedNotice = 1;
-                $billing->save();
-            }
-        }
-    }
-
-    foreach ($forDisconnectionQuery as $billing) {
-        $clientEmail = $billing->meterReading->meter->client->email ?? null;
-        $billing_10daysbefore = Carbon::parse($billing->billingDate)->subDays(10)->toDateString();
-        
-        if ($clientEmail && $billing_10daysbefore <= $today) {
-            if (empty($billing->isnotifiedDisconnection)) {
+                if($billing->isnotifiedDisconnection==null || $billing->isnotifiedDisconnection=='')
+                {
+                // $forDisconnection[] = $billing;
                 $forDisconnection[] = $clientEmail;
                 $this->emailSend($clientEmail, 'Disconnection Notice', 'Your bill is overdue. Immediate payment is required.');
+
                 $billing->isnotifiedDisconnection = 1;
-                $billing->save();
+                $billing->save(); // Save changes to the database
+                }
+            } elseif ($billing->billingDate >= $today && $billing->billingDate <= $threeDaysAhead) {
+                if($billing->isnotifiedNotice==null || $billing->isnotifiedNotice=='')
+                {
+                    $forNotice[] = $clientEmail;
+                    $this->emailSend($clientEmail, 'Payment Reminder', 'Your bill is due soon. Please pay before the due date.');
+                    $billing->isnotifiedNotice = 1;
+                    $billing->save(); // Save changes to the database
+                }
+              
             }
         }
+      
+        return [
+            'forDisconnection' => $forDisconnection,
+            'forNotice' => $forNotice
+        ];
     }
-
-    return [
-        'forDisconnection' => $forDisconnection,
-        'forNotice' => $forNotice
-    ];
-}
-
     
 
     

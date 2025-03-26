@@ -15,7 +15,7 @@
                         Stall Number
                     </div>
                     <div class="text-base font-normal text-gray-500 dark:text-gray-400">
-                        {{ $client->stallNumber }}
+                        {{ $client->meter->stallNumber }}
                     </div>
                 </div>
                 <div class="flex flex-col flex-grow">

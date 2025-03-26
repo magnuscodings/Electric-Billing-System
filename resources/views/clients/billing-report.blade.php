@@ -89,8 +89,9 @@
             <h3>Client Information:</h3>
             <p>Name: {{ $client->fullName }}</p>
             <p>Address: {{ $client->address }}</p>
-            <p>Stall Number: {{ $client->stallNumber }}</p>
+            <p>Stall Number: {{ $client->meter->stallNumber }}</p>
             <p>Meter Number: {{ $client->meter->meterCode }}</p>
+            <p>Or Number: {{ $client->billings->first()->or_number }}</p>
         </div>
 
         @if ($latestBilling)
