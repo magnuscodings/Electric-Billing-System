@@ -354,8 +354,8 @@ public function generate()
                 'status' => Billing::STATUS_PAID,
                 'paymentDate' => now(),
                 'or_number' => $request->or_number, // Save OR number
-                'isnotifiedNotice' => 0, 
-                'isnotifiedDisconnection' => 0, 
+                'isnotifiedNotice' => null, 
+                'isnotifiedDisconnection' => null, 
             ]);
             // Send notification to client about successful payment
             try {
